@@ -1,0 +1,27 @@
+{
+  "matches": [
+    {
+      "message": "Possible grammar error.",
+      "offset": 4,
+      "length": 2,
+      "replacements": [
+        {"value": "goes"}
+      ],
+      "rule": {
+        "id": "SUBJECT_VERB_AGREEMENT"
+      }
+    },
+    {
+      "message": "Possible spelling mistake.",
+      "offset": 21,
+      "length": 4,
+      "replacements": [
+        {"value": "doesn't"},
+        {"value": "does not"}
+      ],
+      "rule": {
+        "id": "SPELLING_RULE"
+      }
+    }
+  ]
+}
