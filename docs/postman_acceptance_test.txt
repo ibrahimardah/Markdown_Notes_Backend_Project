@@ -1,0 +1,112 @@
+1. Register user A and B; login both
+
+# User a
+{
+    "email": "usera@gmail.com",
+    "password": "useraaaa"
+}
+#User b
+{
+    "email": "userb@gmail.com",
+    "password": "userbbbb"
+}
+
+POST http://127.0.0.1:8000/auth/register
+POST http://127.0.0.1:8000/auth/login
+
+# return token when login and then will use it for every request
+
+2. A creates note with Markdown including <script>alert(1)</script>
+
+POST http://127.0.0.1:8000/notes
+
+{
+    "title": "user a javascript",
+    "body_markdown": "<script>alert(1)</script>"
+}
+
+3. A updates note → revisions length = 2
+
+PATCH http://127.0.0.1:8000/notes/15
+
+{
+    "title": "user a javascript update"
+}
+
+4. A restores revision 1 → revisions length = 3; body matches rev 1
+
+POST http://127.0.0.1:8000/notes/15/revisions/29/restore
+
+
+5. A soft-deletes note → absent from GET /notes; present in /notes/trash
+
+DELETE http://127.0.0.1:8000/notes/15
+
+6. A restores note → present in GET /notes again
+
+POST http://127.0.0.1:8000/notes/15/restore
+
+7. B requests A’s note id → 404 or 403
+POST http://127.0.0.1:8000/auth/login
+{
+    "email": "userb@gmail.com",
+    "password": "userbbbb"
+}
+
+GET http://127.0.0.1:8000/notes/15
+
+response:
+{
+    "detail": "Note not found"
+}
+
+
+8. GET render with Accept: text/html → no raw <script>
+
+GET http://127.0.0.1:8000/notes/15/render
+
+# I got an empty sentence (the script one)
+
+GET http://127.0.0.1:8000/notes/16/render
+
+<p>these markdown is for a!</p>
+
+9. GET render twice with If-None-Match → second is 304
+GET http://127.0.0.1:8000/notes/16/render
+
+304 not modified
+
+10. Grammar-check a revision → GET issues returns ≥0 persisted rows
+
+POST http://127.0.0.1:8000/notes/16/revisions/32/grammar-check
+
+[
+    {
+        "id": 7,
+        "revision_id": 32,
+        "offset": 0,
+        "length": 14,
+        "message": "The plural determiner ‘these’ does not agree with the singular noun ‘markdown’.",
+        "rule_id": "THIS_NNS",
+        "suggestions": [
+            "this markdown",
+            "these markdowns"
+        ],
+        "created_at": "2026-09-14T12:19:47.912937"
+    },
+    {
+        "id": 8,
+        "revision_id": 32,
+        "offset": 22,
+        "length": 2,
+        "message": "A word may be missing after ‘a’.",
+        "rule_id": "THE_SENT_END",
+        "suggestions": [],
+        "created_at": "2026-09-14T12:19:47.912937"
+    }
+]
+
+11. docker compose down && up → data still present (volume) / migrations re-run cleanly
+
+docker compose up -d db
+docker compose down
